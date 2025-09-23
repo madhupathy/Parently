@@ -6,6 +6,10 @@ services:
     rootDir: apps/backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    disk:
+      name: parently-data
+      mountPath: /data
+      sizeGB: 1
     envVars:
       - key: OPENAI_MODEL
         value: gpt-4o-mini
@@ -15,3 +19,13 @@ services:
         value: ./sample-data/reminders.json
       - key: SHARED_SECRET
         generateValue: true
+      - key: DATA_DIR
+        value: /data
+      - key: GMAIL_TOKEN_PATH
+        value: /data/token.json
+      - key: GMAIL_QUERY
+        value: newer_than:7d label:School
+      - key: RUN_COOLDOWN_SECONDS
+        value: "60"
+      - key: CORS_ALLOW_ORIGINS
+        value: "http://localhost:3000,https://parently-web.vercel.app"

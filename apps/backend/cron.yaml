@@ -1,0 +1,15 @@
+crons:
+  - name: daily-digest
+    schedule: "45 11 * * *"  # 11:45 UTC = 6:45 AM CT (DST)
+    command: curl -s -X POST $BACKEND_PUBLIC_URL/run-digest -H "x-api-key: $SHARED_SECRET"
+    envVars:
+      - key: BACKEND_PUBLIC_URL
+        fromService:
+          type: web
+          name: parently-backend
+          property: host
+      - key: SHARED_SECRET
+        fromService:
+          type: web
+          name: parently-backend
+          envVarKey: SHARED_SECRET

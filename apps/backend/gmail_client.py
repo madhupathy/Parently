@@ -8,11 +8,14 @@ from google.auth.transport.requests import Request
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
 def _cred_paths():
-    base = os.getenv("GMAIL_CRED_DIR", "./secrets")
-    os.makedirs(base, exist_ok=True)
+    # Credentials are read-only (Secret Files on Render)
+    cred_dir = os.getenv("GMAIL_CRED_DIR", "./secrets")
+    # Tokens are writable (use DATA_DIR on Render)
+    data_dir = os.getenv("DATA_DIR", "./data")
+    os.makedirs(data_dir, exist_ok=True)
     return (
-        os.path.join(base, "credentials.json"),
-        os.path.join(base, "token.json")
+        os.path.join(cred_dir, "credentials.json"),
+        os.path.join(data_dir, "token.json")
     )
 
 def get_flow(redirect_uri: str) -> Flow:

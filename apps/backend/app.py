@@ -1,20 +1,30 @@
 import os
+import time
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, JSONResponse
 from graph import build_graph
 from gmail_client import get_flow, exchange_code_for_token
+from database import db
 
 SHARED_SECRET = os.getenv("SHARED_SECRET", "")
+
+# CORS configuration
+ALLOWED_ORIGINS = os.getenv("CORS_ALLOW_ORIGINS", "http://localhost:3000").split(",")
+ALLOWED_ORIGINS = [origin.strip() for origin in ALLOWED_ORIGINS]
 
 app = FastAPI(title="Parently Backend", version="0.2.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # demo-friendly; tighten in prod
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Rate limiting
+_last_run = 0
+COOLDOWN_SECONDS = int(os.getenv("RUN_COOLDOWN_SECONDS", "30"))
 
 graph = build_graph()
 
@@ -29,23 +39,60 @@ def health():
 @app.post("/run-digest")
 def run_digest(x_api_key: str | None = Header(default=None)):
     check_auth(x_api_key)
-    result = graph.invoke({
-        "pdf_folder": os.getenv("PDF_FOLDER","./sample-data/pdfs"),
-        "reminders_path": os.getenv("REMINDERS_PATH","./sample-data/reminders.json"),
-        "gmail_json": os.getenv("GMAIL_JSON","./sample-data/gmail.json"),
-        "gmail_query": os.getenv("GMAIL_QUERY","newer_than:7d label:School"),
-    })
-    return {
-        "ok": True,
-        "digest_md": result.get("digest_md",""),
-        "items": result.get("items",[]),
-        "output_path": result.get("output_path")
-    }
+    
+    # Rate limiting
+    global _last_run
+    now = time.time()
+    if now - _last_run < COOLDOWN_SECONDS:
+        remaining = int(COOLDOWN_SECONDS - (now - _last_run))
+        raise HTTPException(
+            status_code=429, 
+            detail=f"Please wait {remaining} seconds before running again."
+        )
+    _last_run = now
+    
+    try:
+        result = graph.invoke({
+            "pdf_folder": os.getenv("PDF_FOLDER","./sample-data/pdfs"),
+            "reminders_path": os.getenv("REMINDERS_PATH","./sample-data/reminders.json"),
+            "gmail_json": os.getenv("GMAIL_JSON","./sample-data/gmail.json"),
+            "gmail_query": os.getenv("GMAIL_QUERY","newer_than:7d label:School"),
+        })
+        
+        # Save items and digest to database
+        items = result.get("items", [])
+        if items:
+            db.save_items(items)
+        
+        digest_md = result.get("digest_md", "")
+        if digest_md:
+            from datetime import date
+            db.save_digest(date.today(), digest_md)
+        
+        return {
+            "ok": True,
+            "digest_md": digest_md,
+            "items": items,
+            "output_path": result.get("output_path")
+        }
+    except Exception as e:
+        return {
+            "ok": False,
+            "error": str(e),
+            "hint": "Check logs for details"
+        }
 
 @app.get("/digest/today")
 def digest_today(x_api_key: str | None = Header(default=None)):
     check_auth(x_api_key)
     from datetime import date
+    
+    # Try database first
+    digest_md = db.get_digest(date.today())
+    if digest_md:
+        return {"ok": True, "markdown": digest_md}
+    
+    # Fallback to file system
     path = f"./out/digest_{date.today().isoformat()}.md"
     if not os.path.exists(path):
         return {"ok": False, "message": "No digest yet"}

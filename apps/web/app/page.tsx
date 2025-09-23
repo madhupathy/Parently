@@ -19,20 +19,33 @@ export default async function Home() {
     await triggerRun();
   }
   return (
-    <main style={{ maxWidth: 760, margin: "2rem auto", padding: "1rem" }}>
-      <h1 style={{ fontSize: 24, fontWeight: 700 }}>Parently — parent’s desk in your pocket</h1>
-      <p style={{ color: "#555", marginTop: 8 }}>What parents need to know today</p>
-      <form action={run} style={{ marginTop: 16 }}>
-        <button style={{ padding: "8px 12px", border: "1px solid #ccc", borderRadius: 8 }}>Run digest now</button>
-      </form>
-      <article style={{ marginTop: 24 }}>
+    <main className="max-w-2xl mx-auto p-6">
+      <h1 className="text-2xl font-semibold text-gray-900">Parently — parent's desk in your pocket</h1>
+      <p className="text-gray-500 mt-1">What parents need to know today</p>
+      
+      <div className="mt-4 flex gap-3">
+        <form action={run}>
+          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            Run digest now
+          </button>
+        </form>
+        <a 
+          href="/auth/google/start" 
+          className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          Authorize Gmail
+        </a>
+      </div>
+      
+      <article className="prose prose-neutral mt-6 max-w-none">
         {data?.ok ? (
           <ReactMarkdown>{data.markdown}</ReactMarkdown>
         ) : (
-          <div>No digest yet. Click Run above.</div>
+          <div className="text-gray-500 italic">No digest yet. Click "Run digest now" above.</div>
         )}
       </article>
-      <footer style={{ marginTop: 40, color: "#777", fontSize: 12 }}>
+      
+      <footer className="mt-8 pt-4 border-t border-gray-200 text-sm text-gray-500">
         © {new Date().getFullYear()} Parently
       </footer>
     </main>
