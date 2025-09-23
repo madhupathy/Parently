@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+pydantic
+langgraph
+openai>=1.40.0
+python-dotenv
+pypdf
+requests
+google-api-python-client
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+python-dateutil
+pytest

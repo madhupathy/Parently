@@ -1,0 +1,18 @@
+[
+  {
+    "id": "m1",
+    "date": "2025-09-18T08:10:00-05:00",
+    "from": "ms.canales@harmony.edu",
+    "subject": "Spirit Day Friday",
+    "text": "Wear house colors this Friday. Permission slip due Thu 2025-09-25 for next week's field trip.",
+    "attachments": []
+  },
+  {
+    "id": "m2",
+    "date": "2025-09-18T07:15:00-05:00",
+    "from": "school-office@harmony.edu",
+    "subject": "Early Dismissal Notice",
+    "text": "Reminder: Early dismissal at 1:00 PM on Friday 2025-09-19.",
+    "attachments": []
+  }
+]
