@@ -1,7 +1,7 @@
 import os
 from datetime import date, datetime
 from typing import List, Dict, Any, Optional
-from sqlalchemy import create_engine, Column, String, Date, DateTime, Text, ARRAY, Integer
+from sqlalchemy import create_engine, Column, String, Date, DateTime, Text, JSON, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.dialects.postgresql import UUID
@@ -18,7 +18,7 @@ class Item(Base):
     sender = Column(String)
     subject = Column(String)
     text = Column(Text)
-    tags = Column(ARRAY(String))
+    tags = Column(JSON, nullable=True)
     due_date = Column(Date)
     child = Column(String)
 

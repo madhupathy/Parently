@@ -36,6 +36,10 @@ def check_auth(x_api_key: str | None):
 def health():
     return {"ok": True, "service": "parently-backend"}
 
+@app.get("/healthz")
+def healthz():
+    return {"ok": True}
+
 @app.post("/run-digest")
 def run_digest(x_api_key: str | None = Header(default=None)):
     check_auth(x_api_key)
