@@ -4,23 +4,26 @@ import ReactMarkdown from "react-markdown";
 export const dynamic = "force-dynamic";
 
 async function fetchDigest() {
-  const r = await fetch(`${process.env.NEXT_PUBLIC_BASE ?? ""}/api/digest`, { cache: "no-store" });
+  const r = await fetch(`/api/digest`, { cache: "no-store" });
   return r.json();
-}
-
-async function runNow() {
-  "use server";
-  await fetch(`${process.env.NEXT_PUBLIC_BASE ?? ""}/api/digest`, { method: "POST" });
 }
 
 export default async function Home() {
   const data = await fetchDigest();
+
+  async function runNow() {
+    "use server";
+    await fetch(`/api/digest`, { method: "POST" });
+  }
+
   return (
     <main style={{ maxWidth: 760, margin: "2rem auto", padding: "1rem" }}>
       <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Parently — parent's desk in your pocket</h1>
       <p style={{ color: "#555", marginTop: 8 }}>What parents need to know today</p>
       <form action={runNow} style={{ marginTop: 16 }}>
-        <button style={{ padding: "8px 12px", border: "1px solid #ccc", borderRadius: 8 }}>Run digest now</button>
+        <button style={{ padding: "8px 12px", border: "1px solid #ccc", borderRadius: 8 }}>
+          Run digest now
+        </button>
       </form>
       <article style={{ marginTop: 24 }}>
         {data?.ok ? (
